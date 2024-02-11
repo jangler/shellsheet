@@ -1,11 +1,37 @@
 <script lang="ts">
+	import { onMount } from "svelte";
+    import { cells } from '$lib/state';
+    import { displayError } from "./messages";
+
     export let id: string;
     export let value: any;
+
+    let element: HTMLElement | undefined;
+
+    onMount(() => {
+        cells.set(id, element!);
+    });
+
+    function updateId(e: Event) {
+        let target = e.target as HTMLInputElement;
+        let key = target.value;
+        if (key === id) return;
+        if (cells.has(key)) {
+            displayError(`Cell with ID '${key}' already exists`);
+            target.value = id;
+        } else {
+            cells.set(key, element!);
+            cells.delete(id);
+            id = key;
+        }
+        console.log(cells);
+    }
 </script>
 
 <style>
     div.cell {
         border: 1px solid gray;
+        border-radius: 2px;
         margin: 0.5rem;
         width: fit-content;
     }
@@ -29,9 +55,9 @@
     }
 </style>
 
-<div class="cell">
+<div class="cell" bind:this={element}>
     <div class="header">
-        <input id="id" type="text" size="8" bind:value={id}/>
+        <input id="id" type="text" size="8" value={id} on:change={updateId} on:focusout={updateId}/>
         <div class="type">{typeof value}</div>
     </div>
     <div class="content">
