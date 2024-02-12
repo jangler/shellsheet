@@ -1,21 +1,19 @@
 <script lang="ts">
     import Cell from '$lib/Cell.svelte';
+	import ContextMenu from '$lib/ContextMenu.svelte';
     import Message from '$lib/Message.svelte';
     import { cells } from '$lib/cells';
     import { messages } from '$lib/messages';
 
+    let menuVisible = false;
+    let menuX: number;
+    let menuY: number;
+
     function showContextMenu(e: MouseEvent) {
         e.preventDefault();
-        const menu = document.querySelector('#contextMenu') as HTMLElement;
-        console.log(menu);
-        menu.style.left = `${e.clientX}px`;
-        menu.style.top = `${e.clientY}px`;
-        menu.classList.remove('hidden');
-    }
-
-    function hideContextMenu() {
-        const menu = document.querySelector('#contextMenu') as HTMLElement;
-        menu.classList.add('hidden');
+        menuX = e.clientX;
+        menuY = e.clientY;
+        menuVisible = true;
     }
 
     function addCell() {
@@ -26,7 +24,12 @@
         });
     }
 
-    document.addEventListener('mouseup', hideContextMenu);
+    document.addEventListener('mouseup', () => menuVisible = false);
+
+    let menuItems = [
+        { text: "Add cell", callback: addCell },
+        { text: "Clear workspace", callback: cells.clear },
+    ];
 </script>
 
 <style>
@@ -46,31 +49,6 @@
         bottom: 0;
         right: 0;
     }
-    #contextMenu {
-        position: absolute;
-        background-color: white;
-        border: 1px solid black;
-        border-radius: 2px;
-        padding: 0;
-        list-style: none;
-    }
-    #contextMenu li button {
-        background-color: inherit;
-        border: 0;
-        border-radius: 0;
-        text-align: left;
-        padding: 0.4rem;
-        width: 100%;
-    }
-    #contextMenu li button:hover {
-        background-color: hsl(200, 80%, 95%);
-    }
-    #contextMenu li button:active {
-        background-color: hsl(200, 90%, 90%);
-    }
-    .hidden {
-        display: none;
-    }
 </style>
 
 <h1>Shellsheet</h1>
@@ -85,8 +63,6 @@
     <Message {...message}/>
     {/each}
 </div>
-<!-- TODO: Accelerators! -->
-<menu id="contextMenu" class="hidden">
-    <li><button on:mouseup={addCell}>Add cell</button></li>
-    <li><button on:mouseup={cells.clear}>Clear workspace</button></li>
-</menu>
+{#if menuVisible}
+<ContextMenu x={menuX} y={menuY} items={menuItems}/>
+{/if}
