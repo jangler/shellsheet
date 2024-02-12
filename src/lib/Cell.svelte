@@ -1,7 +1,39 @@
+<script lang="ts" context="module">
+    import { writable } from 'svelte/store';
+
+    type Cell = { name: string, value: any, editable: boolean };
+
+    const { subscribe, set, update } = writable([] as Cell[]);
+
+    export const cells = {
+        subscribe: subscribe,
+        clear: () => set([]),
+        push: (cell: Cell) => update((cs) => [...cs, cell]),
+    }
+
+    let cellNames = new Set();
+    cells.subscribe((cs) => {
+        cellNames.clear();
+        for (const cell of cs) {
+            cellNames.add(cell.name);
+        }
+    });
+
+    export function firstFreeName() {
+        let i = 1;
+        while (true) {
+            let name = `#${i}`;
+            if (!cellNames.has(name)) return name;
+            i++;
+        }
+    }
+</script>
+
 <script lang="ts">
 	// import { onMount } from "svelte";
     // import { cells } from '$lib/state';
-    // import { displayInfo, displayError } from "./messages";
+    import { messages } from "./messages";
+	import { tick } from 'svelte';
 
     // type fn = () => any;
 
@@ -37,18 +69,20 @@
     // });
 
     function updateId(e: Event) {
-    //     let target = e.target as HTMLInputElement;
-    //     let key = target.value;
-    //     if (key === id) return;
-    //     if (cells.has(key)) {
-    //         displayError(`Cell '${key}' already exists`);
-    //         target.value = id;
-    //     } else {
-    //         displayInfo(`Cell '${id}' updated to '${key}'`);
-    //         setState();
-    //         cells.delete(id);
-    //         id = key;
-    //     }
+        let target = e.target as HTMLInputElement;
+        let key = target.value;
+        if (key === name) return;
+        if (cellNames.has(key)) {
+            messages.postError(`Cell '${key}' already exists`);
+            target.value = name;
+        } else {
+            // FIXME: This doesn't propogate to the original cell object.
+            messages.postInfo(`Cell '${name}' updated to '${key}'`);
+            name = key;
+        }
+        tick().then(() => {
+            console.log(cellNames);
+        });
     }
 
     function handleUpdateValue() {

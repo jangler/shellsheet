@@ -1,8 +1,7 @@
 <script lang="ts">
-    import Cell from '$lib/Cell.svelte';
+    import Cell, { cells, firstFreeName } from '$lib/Cell.svelte';
 	import ContextMenu from '$lib/ContextMenu.svelte';
     import Message from '$lib/Message.svelte';
-    import { cells } from '$lib/cells';
     import { messages } from '$lib/messages';
 
     let menuVisible = false;
@@ -18,7 +17,7 @@
 
     function addCell() {
         cells.push({
-            name: 'cell0',
+            name: firstFreeName(),
             value: 0,
             editable: true,
         });
