@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
     import { cells } from '$lib/state';
-    import { displayError } from "./messages";
+    import { displayInfo, displayError } from "./messages";
 
     export let id: string;
     export let value: any;
@@ -17,9 +17,10 @@
         let key = target.value;
         if (key === id) return;
         if (cells.has(key)) {
-            displayError(`Cell with ID '${key}' already exists`);
+            displayError(`Cell '${key}' already exists`);
             target.value = id;
         } else {
+            displayInfo(`Cell '${id}' updated to '${key}'`);
             cells.set(key, element!);
             cells.delete(id);
             id = key;
