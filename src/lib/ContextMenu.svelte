@@ -1,16 +1,9 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-
     export let x: number;
     export let y: number;
     export let items: { text: string, callback: () => any }[];
 
     let element: HTMLMenuElement;
-
-    onMount(() => {
-        element.style.left = `${x}px`;
-        element.style.top = `${y - 16}px`;
-    });
     
     // TODO: Add keyboard accelerators.
 </script>
@@ -40,7 +33,7 @@
     }
 </style>
 
-<menu bind:this={element}>
+<menu bind:this={element} style:left={`${x}px`} style:top={`${y - 16}px`}>
     {#each items as item}
     <li><button on:mouseup={item.callback}>{item.text}</button></li>
     {/each}
