@@ -9,6 +9,7 @@
         subscribe: subscribe,
         clear: () => set([]),
         push: (cell: Cell) => update((cs) => [...cs, cell]),
+        remove: (name: string) => update((cs) => cs.filter((c) => c.name !== name)),
     }
 
     let cellNames = new Set();
@@ -34,6 +35,7 @@
     // import { cells } from '$lib/state';
     import { messages } from "./messages";
 	import { tick } from 'svelte';
+    import { showContextMenu } from './ContextMenu.svelte';
 
     // type fn = () => any;
 
@@ -94,6 +96,18 @@
     //     }
     //     setState();
     }
+    
+    function removeCell() {
+        cells.remove(name);
+    }
+
+    function showCellContextMenu(e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenu(e.clientX, e.clientY, [
+            { text: 'Remove cell', callback: removeCell },
+        ]);
+    }
 
     // $: handleUpdateValue();
 </script>
@@ -125,7 +139,7 @@
     }
 </style>
 
-<div class="cell">
+<div class="cell" on:contextmenu={showCellContextMenu}>
     <div class="header">
         <input id="id" type="text" size="8" value={name} on:change={updateId} on:focusout={updateId}/>
         <div class="type">{typeof value}</div>
