@@ -8,6 +8,7 @@
 <style>
     div {
         border: 1px solid lightgray;
+        background-color: white;
         border-radius: 2px;
         margin: 1rem;
         padding: 0.5rem;

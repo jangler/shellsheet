@@ -1,32 +1,67 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-    import { cells } from '$lib/state';
-    import { displayInfo, displayError } from "./messages";
+	// import { onMount } from "svelte";
+    // import { cells } from '$lib/state';
+    // import { displayInfo, displayError } from "./messages";
 
-    export let id: string;
+    // type fn = () => any;
+
+    export let name: string;
     export let value: any;
+    export let editable = true;
 
-    let element: HTMLElement | undefined;
+    // export let genfn: fn | undefined = undefined;
+    // export let depends: string[] = [];
 
-    onMount(() => {
-        cells.set(id, element!);
-    });
+    // let element: HTMLElement | undefined;
+    // let previousValue: any;
+    // let whenUpdated: fn[] = [];
+
+    // function setState() {
+    //     cells.set(id, { element: element!, value: value, genfn: genfn });
+    // }
+
+    // // FIXME: The dependency stuff is wrong (I think it's trying to flow in
+    // //        the wrong direction), and I think the kind of approach I'm
+    // //        taking is wrong too. I shouldn't be duplicating state like this;
+    // //        either I need to make Workspace into a component(?) and have
+    // //        updates propogate via bindings (or store subscriptions?) or just
+    // //        use vanilla TS with JSX.
+
+    // onMount(() => {
+    //     if (genfn) value = genfn();
+    //     setState();
+    //     for (const dep of depends) {
+    //         const f = cells.get(dep).genfn;
+    //         if (f) whenUpdated.push(f);
+    //     }
+    // });
 
     function updateId(e: Event) {
-        let target = e.target as HTMLInputElement;
-        let key = target.value;
-        if (key === id) return;
-        if (cells.has(key)) {
-            displayError(`Cell '${key}' already exists`);
-            target.value = id;
-        } else {
-            displayInfo(`Cell '${id}' updated to '${key}'`);
-            cells.set(key, element!);
-            cells.delete(id);
-            id = key;
-        }
-        console.log(cells);
+    //     let target = e.target as HTMLInputElement;
+    //     let key = target.value;
+    //     if (key === id) return;
+    //     if (cells.has(key)) {
+    //         displayError(`Cell '${key}' already exists`);
+    //         target.value = id;
+    //     } else {
+    //         displayInfo(`Cell '${id}' updated to '${key}'`);
+    //         setState();
+    //         cells.delete(id);
+    //         id = key;
+    //     }
     }
+
+    function handleUpdateValue() {
+    //     console.log(previousValue, value);
+    //     if (previousValue !== undefined && previousValue !== value) {
+    //         displayInfo(`${id}: ${previousValue} changed to ${value}`);
+    //         previousValue = value;
+    //         for (f of whenUpdated) f();
+    //     }
+    //     setState();
+    }
+
+    // $: handleUpdateValue();
 </script>
 
 <style>
@@ -56,12 +91,18 @@
     }
 </style>
 
-<div class="cell" bind:this={element}>
+<div class="cell">
     <div class="header">
-        <input id="id" type="text" size="8" value={id} on:change={updateId} on:focusout={updateId}/>
+        <input id="id" type="text" size="8" value={name} on:change={updateId} on:focusout={updateId}/>
         <div class="type">{typeof value}</div>
     </div>
+    {#if editable}
+    {#if typeof value === 'number'}
+    <input type="number" value={value} on:change={handleUpdateValue} on:focusout={handleUpdateValue}/>
+    {/if}
+    {:else}
     <div class="content">
         {value}
     </div>
+    {/if}
 </div>

@@ -1,1 +1,0 @@
-export let cells: Map<string, Element> = new Map();
