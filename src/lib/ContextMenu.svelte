@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-    import { writable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 
 	type Item = {
 		text: string;
@@ -18,7 +18,7 @@
 		visible.set(true);
 	}
 
-    // TODO: Add keyboard accelerators.
+	// TODO: Add keyboard accelerators.
 </script>
 
 <svelte:document on:mouseup={() => visible.set(false)} />

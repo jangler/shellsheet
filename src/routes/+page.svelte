@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Cell, { cells, firstFreeName } from '$lib/Cell.svelte';
 	import ContextMenu, { showContextMenu } from '$lib/ContextMenu.svelte';
-	import Message from '$lib/Message.svelte';
-	import { messages } from '$lib/messages';
+	import Message, { messages } from '$lib/Message.svelte';
 
 	function showWorkspaceContextMenu(e: MouseEvent) {
 		e.preventDefault();
