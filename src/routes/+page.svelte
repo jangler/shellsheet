@@ -24,8 +24,6 @@
         });
     }
 
-    document.addEventListener('mouseup', () => menuVisible = false);
-
     let menuItems = [
         { text: "Add cell", callback: addCell },
         { text: "Clear workspace", callback: cells.clear },
@@ -50,6 +48,8 @@
         right: 0;
     }
 </style>
+
+<svelte:document on:mouseup={() => menuVisible = false}/>
 
 <h1>Shellsheet</h1>
 <!-- FIXME: What ARIA role to use here? -->
