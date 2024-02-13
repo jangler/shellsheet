@@ -1,14 +1,18 @@
-<script lang="ts">
-	import { showContextMenu } from './ContextMenu.svelte';
-	import { messages } from './Message.svelte';
-
+<script lang="ts" context="module">
 	type Cell = {
 		name: string;
 		value: any;
 		generate?: () => any;
 		dependsOn: Cell[];
 		dependents: Cell[];
+		selected: boolean;
 	};
+</script>
+
+<script lang="ts">
+	import { showContextMenu } from './ContextMenu.svelte';
+	import { messages } from './Message.svelte';
+
 	let cells: Cell[] = [];
 
 	function firstFreeName() {
@@ -36,7 +40,8 @@
 			name: firstFreeName(),
 			value: 0,
 			dependsOn: [],
-			dependents: []
+			dependents: [],
+			selected: false
 		});
 	}
 
@@ -51,7 +56,8 @@
 			value: undefined,
 			generate: () => source.value * 2,
 			dependsOn: [source],
-			dependents: []
+			dependents: [],
+			selected: false
 		});
 	}
 
@@ -80,20 +86,32 @@
 
 	function propagateCallback(cell: Cell) {
 		return () => {
-            for (const dep of cell.dependents) {
+			for (const dep of cell.dependents) {
 				if (dep.generate) dep.value = dep.generate();
-            }
-            cells = cells;
+			}
+			cells = cells;
 		};
 	}
 
-    // TODO: Value is wrong when backspacing a number entry.
+	function cellMouseUp(cell: Cell) {
+		return () => {
+			cell.selected = true;
+			cells = cells;
+		};
+	}
+
+	// TODO: Value is wrong when backspacing a number entry.
 </script>
 
 <!-- FIXME: What ARIA role to use here? -->
 <div class="workspace" on:contextmenu={showWorkspaceContextMenu}>
 	{#each cells as cell}
-		<div class="cell" on:contextmenu={cellContextMenuCallback(cell)}>
+		<div
+			class="cell"
+			class:selected={cell.selected}
+			on:contextmenu={cellContextMenuCallback(cell)}
+			on:mouseup={cellMouseUp(cell)}
+		>
 			<div class="header">
 				<input id="id" type="text" size="8" bind:value={cell.name} />
 				<div class="type">{typeof cell.value}</div>
@@ -120,6 +138,9 @@
 		border-radius: 2px;
 		margin: 0.5rem;
 		width: fit-content;
+	}
+	div.selected {
+		border: 2px solid blue;
 	}
 	div.content {
 		padding: 0.5rem;
