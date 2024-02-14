@@ -68,21 +68,47 @@ function cellCollapseHandler(cell: Cell) {
 
 function cellNameUpdateHandler(cell: Cell) {
 	return (e: Event) => {
-		cell.name = (e.target as HTMLInputElement).value;
+		const oldName = cell.name;
+		const newName = (e.target as HTMLInputElement).value;
+		pushAction({
+			label: 'cell name change',
+			do: () => {
+				cell.name = newName;
+				renderWorkspace();
+			},
+			undo: () => {
+				cell.name = oldName;
+				renderWorkspace();
+			},
+		});
 	}
 }
 
 function cellValueUpdateHandler(cell: Cell) {
 	return (e: Event) => {
+		const oldValue = cell.value;
+		const type = typeof oldValue;
 		const element = (e.target as HTMLInputElement);
-		if (typeof cell.value == 'number') {
-			cell.value = element.valueAsNumber;
-		} else if (typeof cell.value == 'string') {
-			cell.value = element.value;
+		let newValue;
+		if (type == 'number') {
+			newValue = element.valueAsNumber;
+		} else if (type == 'string') {
+			newValue = element.value;
 		} else {
-			error(`Update handler not implemented for ${typeof cell.value} type`);
+			error(`Update handler not implemented for ${type} type`);
+			return;
 		}
-		info('Updated cell value');
+		pushAction({
+			label: 'update cell value',
+			do: () => {
+				cell.value = newValue;
+				renderWorkspace();
+			},
+			undo: () => {
+				cell.value = oldValue;
+				renderWorkspace();
+			},
+		})
 	}
 }
 
@@ -118,6 +144,7 @@ function renderWorkspace() {
 
 function addCell(cell: Cell) {
 	pushAction({
+		label: 'cell insertion',
 		do: () => {
 			cells.push(cell);
 			renderWorkspace();
@@ -138,6 +165,7 @@ function deleteSelectedCells() {
 	});
 	if (deletions.length == 0) return;
 	pushAction({
+		label: 'cell deletion',
 		do: () => {
 			const indices = deletions.map(({ index }) => index);
 			cells = cells.filter((_, i) => !indices.includes(i));
@@ -203,7 +231,7 @@ function workspaceClick() {
 function renderApp() {
 	render(<>
 		<h1>Shellsheet</h1>
-		<div class="flex-row" onKeyDown={keydown}>
+		<div class="flex-row">
 			<div id="workspace" onClick={workspaceClick}></div>
 			<div id="commands"></div>
 		</div>
@@ -213,5 +241,9 @@ function renderApp() {
 	renderCommands();
 	renderMessages();
 }
+
+// FIXME: Use Preact's component lifecycle functions to remove this when Vite
+// refreshes things.
+document.addEventListener('keydown', keydown);
 
 renderApp();

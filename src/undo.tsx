@@ -1,6 +1,7 @@
 import { info, error } from "./messages";
 
 type Action = {
+    label: string,
     do: () => void,
     undo: () => void,
 };
@@ -17,7 +18,7 @@ export function pushAction(act: Action) {
 export function undo() {
     const act = undoStack.pop();
     if (act) {
-        info('Undoing');
+        if (act.label) info(`Undid ${act.label}`);
         act.undo();
         redoStack.push(act);
     } else {
@@ -28,7 +29,7 @@ export function undo() {
 export function redo() {
     const act = redoStack.pop();
     if (act) {
-        info('Redoing');
+        if (act.label) info(`Redid ${act.label}`);
         act.do();
         undoStack.push(act);
     } else {
