@@ -83,12 +83,18 @@ h2 {
 		>.type {
 			font-style: italic;
 			font-size: small;
+			margin-right: 0.2rem;
 		}
 	}
 
 	>input {
 		width: 100%;
 		box-sizing: border-box;
+	}
+
+	>.value {
+		background-color: hsl(0, 0%, 99%);
+		padding-left: 0.3rem;
 	}
 }
 

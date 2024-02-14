@@ -36,9 +36,11 @@ function CommandPane({ cats }) {
 
 type Cell = {
 	name: string,
-	value: any,
+	value?: any,
+	regen?: () => any,
 	selected?: boolean,
 	collapsed?: boolean,
+	dependents?: Cell[],
 };
 
 let cells: Cell[] = [];
@@ -84,10 +86,30 @@ function cellNameUpdateHandler(cell: Cell) {
 	}
 }
 
+function updateCellValue(cell: Cell, newValue: any) {
+	const oldValue = cell.value;
+	pushAction({
+		label: 'update cell value',
+		do: () => {
+			cell.value = newValue;
+			for (const c of cell.dependents) {
+				c.value = c.regen();
+			}
+			renderWorkspace();
+		},
+		undo: () => {
+			cell.value = oldValue;
+			for (const c of cell.dependents) {
+				c.value = c.regen();
+			}
+			renderWorkspace();
+		},
+	})
+}
+
 function cellValueUpdateHandler(cell: Cell) {
 	return (e: Event) => {
-		const oldValue = cell.value;
-		const type = typeof oldValue;
+		const type = typeof cell.value;
 		const element = (e.target as HTMLInputElement);
 		let newValue;
 		if (type == 'number') {
@@ -98,32 +120,23 @@ function cellValueUpdateHandler(cell: Cell) {
 			error(`Update handler not implemented for ${type} type`);
 			return;
 		}
-		pushAction({
-			label: 'update cell value',
-			do: () => {
-				cell.value = newValue;
-				renderWorkspace();
-			},
-			undo: () => {
-				cell.value = oldValue;
-				renderWorkspace();
-			},
-		})
+		updateCellValue(cell, newValue);
 	}
 }
 
 function Cell({ cell }) {
-	return <div class={`cell ${cell.selected && 'selected'}`}
+	return <div class={`cell${cell.selected ? ' selected' : ''}`}
 		onClick={cellClickHandler(cell)}>
 		<div class="header">
 			<button onClick={cellCollapseHandler(cell)}>
 				{cell.collapsed ? '▷' : '▽'}
 			</button>
-			<input type="text" size={8} value={cell.name}
+			<input type="text" size={24} value={cell.name}
 				onChange={cellNameUpdateHandler(cell)} />
 			<span class="type">{typeof cell.value}</span>
 		</div>
-		{!cell.collapsed && (
+		{!cell.collapsed && (cell.regen ?
+			<div class="value">{cell.value}</div> :
 			<input type="number" size={8} value={cell.value}
 				onChange={cellValueUpdateHandler(cell)} />
 		)}
@@ -142,14 +155,24 @@ function renderWorkspace() {
 	render(<Workspace cells={cells} />, document.getElementById('workspace'));
 }
 
-function addCell(cell: Cell) {
+function addCell(cell: Cell, dependsOn?: Cell[]) {
+	cell.dependents = [];
+	if (cell.regen) cell.value = cell.regen();
 	pushAction({
 		label: 'cell insertion',
 		do: () => {
+			if (dependsOn) {
+				for (const c of dependsOn) c.dependents.push(cell);
+			}
 			cells.push(cell);
 			renderWorkspace();
 		},
 		undo: () => {
+			if (dependsOn) {
+				for (const c of dependsOn) {
+					c.dependents = c.dependents.filter(c2 => c2 !== c);
+				}
+			}
 			cells.pop();
 			renderWorkspace();
 		},
@@ -182,7 +205,8 @@ function deleteSelectedCells() {
 
 function cellNameWithPrefix(prefix: string) {
 	const cellNames = new Set(cells.map(c => c.name));
-	let number = 1;
+	if (!cellNames.has(prefix)) return prefix;
+	let number = 2;
 	while (cellNames.has(`${prefix} ${number}`)) {
 		number++;
 	}
@@ -196,6 +220,19 @@ function addNumberCell() {
 	});
 }
 
+function addSumCell() {
+	const selection = cells.filter(c => c.selected);
+	const fn = () => {
+		let sum = 0;
+		for (const c of selection) sum += c.value;
+		return sum;
+	}
+	addCell({
+		name: cellNameWithPrefix(`Sum of ${selection.map(c => c.name).join(', ')}`),
+		regen: fn,
+	}, selection);
+}
+
 const commandCats = [
 	{
 		label: "Cells", commands: [
@@ -205,6 +242,11 @@ const commandCats = [
 	{
 		label: "Literals", commands: [
 			{ label: "Number", callback: addNumberCell },
+		]
+	},
+	{
+		label: "Math", commands: [
+			{ label: "Sum", callback: addSumCell }
 		]
 	},
 ];
