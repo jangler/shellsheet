@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { useState } from 'preact/hooks';
 
 import { renderMessages, info, error } from './messages';
+import { pushAction, undo, redo } from './undo';
 
 import './normalize.css';
 import './style.css';
@@ -44,6 +45,7 @@ let cells: Cell[] = [];
 
 function cellClickHandler(cell: Cell) {
 	return (e: MouseEvent) => {
+		e.stopPropagation();
 		if (e.altKey) {
 			cell.selected = !cell.selected;
 		} else if (e.ctrlKey || e.shiftKey) {
@@ -115,14 +117,55 @@ function renderWorkspace() {
 }
 
 function addCell(cell: Cell) {
-	info(`Added cell '${cell.name}'`);
-	cells.push(cell);
-	renderWorkspace();
+	pushAction({
+		do: () => {
+			cells.push(cell);
+			renderWorkspace();
+		},
+		undo: () => {
+			cells.pop();
+			renderWorkspace();
+		},
+	});
 }
 
 function deleteSelectedCells() {
-	cells = cells.filter(c => !c.selected);
-	renderWorkspace();
+	const deletions = [];
+	cells.map((cell, index) => {
+		if (cell.selected) {
+			deletions.push({ index, cell });
+		}
+	});
+	if (deletions.length == 0) return;
+	pushAction({
+		do: () => {
+			const indices = deletions.map(({ index }) => index);
+			cells = cells.filter((_, i) => !indices.includes(i));
+			renderWorkspace();
+		},
+		undo: () => {
+			for (const { index, cell } of deletions) {
+				cells.splice(index, 0, cell);
+			}
+			renderWorkspace();
+		},
+	});
+}
+
+function cellNameWithPrefix(prefix: string) {
+	const cellNames = new Set(cells.map(c => c.name));
+	let number = 1;
+	while (cellNames.has(`${prefix} ${number}`)) {
+		number++;
+	}
+	return `${prefix} ${number}`;
+}
+
+function addNumberCell() {
+	addCell({
+		name: cellNameWithPrefix('Number'),
+		value: 0,
+	});
 }
 
 const commandCats = [
@@ -133,12 +176,7 @@ const commandCats = [
 	},
 	{
 		label: "Literals", commands: [
-			{
-				label: "Number", callback: () => addCell({
-					name: "Cell",
-					value: 0,
-				})
-			},
+			{ label: "Number", callback: addNumberCell },
 		]
 	},
 ];
@@ -147,6 +185,33 @@ function renderCommands() {
 	render(<CommandPane cats={commandCats} />, document.getElementById('commands'));
 }
 
-renderWorkspace();
-renderCommands();
-renderMessages();
+function keydown(e: KeyboardEvent) {
+	if (e.ctrlKey) {
+		if (e.code == 'KeyZ') {
+			undo();
+		} else if (e.code == 'KeyY') {
+			redo();
+		}
+	}
+}
+
+function workspaceClick() {
+	cells.map(c => c.selected = false);
+	renderWorkspace();
+}
+
+function renderApp() {
+	render(<>
+		<h1>Shellsheet</h1>
+		<div class="flex-row" onKeyDown={keydown}>
+			<div id="workspace" onClick={workspaceClick}></div>
+			<div id="commands"></div>
+		</div>
+		<ul id="messages"></ul>
+	</>, document.getElementById('app'))
+	renderWorkspace();
+	renderCommands();
+	renderMessages();
+}
+
+renderApp();
