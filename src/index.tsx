@@ -64,6 +64,26 @@ function cellCollapseHandler(cell: Cell) {
 	};
 }
 
+function cellNameUpdateHandler(cell: Cell) {
+	return (e: Event) => {
+		cell.name = (e.target as HTMLInputElement).value;
+	}
+}
+
+function cellValueUpdateHandler(cell: Cell) {
+	return (e: Event) => {
+		const element = (e.target as HTMLInputElement);
+		if (typeof cell.value == 'number') {
+			cell.value = element.valueAsNumber;
+		} else if (typeof cell.value == 'string') {
+			cell.value = element.value;
+		} else {
+			error(`Update handler not implemented for ${typeof cell.value} type`);
+		}
+		info('Updated cell value');
+	}
+}
+
 function Cell({ cell }) {
 	return <div class={`cell ${cell.selected && 'selected'}`}
 		onClick={cellClickHandler(cell)}>
@@ -71,10 +91,14 @@ function Cell({ cell }) {
 			<button onClick={cellCollapseHandler(cell)}>
 				{cell.collapsed ? '▷' : '▽'}
 			</button>
-			<input type="text" size={8} value={cell.name} />
+			<input type="text" size={8} value={cell.name}
+				onChange={cellNameUpdateHandler(cell)} />
 			<span class="type">{typeof cell.value}</span>
 		</div>
-		{!cell.collapsed && <input type="number" size={8} value={cell.value} />}
+		{!cell.collapsed && (
+			<input type="number" size={8} value={cell.value}
+				onChange={cellValueUpdateHandler(cell)} />
+		)}
 	</div>;
 }
 
