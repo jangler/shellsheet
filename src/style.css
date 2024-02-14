@@ -55,13 +55,29 @@ h2 {
 
 	>.header {
 		margin: 0;
-		padding: 0.5rem;
+		padding: 0.2rem;
+
+		>button {
+			background-color: inherit;
+			border: none;
+			color: steelblue;
+			padding: 0.1rem;
+		}
+
+		>button:hover {
+			background-color: paleturquoise;
+		}
+
+		>button:active {
+			background-color: steelblue;
+		}
 
 		>input {
 			background-color: inherit;
 			border: 0;
 			font-size: large;
 			font-weight: bold;
+			margin: 0 0.5rem;
 		}
 
 		>.type {
@@ -70,8 +86,9 @@ h2 {
 		}
 	}
 
-	>.content {
-		padding: 0.5rem;
+	>input {
+		width: 100%;
+		box-sizing: border-box;
 	}
 }
 

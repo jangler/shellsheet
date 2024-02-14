@@ -36,7 +36,8 @@ function CommandPane({ cats }) {
 type Cell = {
 	name: string,
 	value: any,
-	selected: boolean,
+	selected?: boolean,
+	collapsed?: boolean,
 };
 
 let cells: Cell[] = [];
@@ -55,14 +56,25 @@ function cellClickHandler(cell: Cell) {
 	};
 }
 
+function cellCollapseHandler(cell: Cell) {
+	return (e: MouseEvent) => {
+		cell.collapsed = !cell.collapsed;
+		renderWorkspace();
+		e.stopPropagation();
+	};
+}
+
 function Cell({ cell }) {
 	return <div class={`cell ${cell.selected && 'selected'}`}
 		onClick={cellClickHandler(cell)}>
 		<div class="header">
+			<button onClick={cellCollapseHandler(cell)}>
+				{cell.collapsed ? '▷' : '▽'}
+			</button>
 			<input type="text" size={8} value={cell.name} />
-			<div class="type">{typeof cell.value}</div>
+			<span class="type">{typeof cell.value}</span>
 		</div>
-		<input type="number" value={cell.value} />
+		{!cell.collapsed && <input type="number" size={8} value={cell.value} />}
 	</div>;
 }
 
@@ -78,7 +90,7 @@ function renderWorkspace() {
 	render(<Workspace cells={cells} />, document.getElementById('workspace'));
 }
 
-function addCell(cell) {
+function addCell(cell: Cell) {
 	info(`Added cell '${cell.name}'`);
 	cells.push(cell);
 	renderWorkspace();
