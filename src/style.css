@@ -1,0 +1,143 @@
+:root {
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+
+	color: #222;
+	background-color: #ffffff;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+}
+
+/* FIXME: All parts of the UI should respond to this. */
+@media (prefers-color-scheme: dark) {
+	:root {
+		color: #ccc;
+		background-color: #1a1a1a;
+	}
+}
+
+h1 {
+	background-color: lightsteelblue;
+	margin: 0;
+	padding: 0.5rem;
+	text-align: center;
+	border-bottom: 1px solid steelblue;
+}
+
+h2 {
+	text-align: center;
+	border-bottom: 1px solid lightgray;
+	margin: 0;
+}
+
+#workspace {
+	padding: 0.5rem;
+	border-bottom: 1px solid steelblue;
+	width: 100%;
+}
+
+.cell {
+	border: 1px solid gray;
+	border-radius: 2px;
+	margin: 0.5rem;
+	width: fit-content;
+	background-color: lightblue;
+
+	>.header {
+		margin: 0;
+		padding: 0.5rem;
+
+		>input {
+			background-color: inherit;
+			border: 0;
+			font-size: large;
+			font-weight: bold;
+		}
+
+		>.type {
+			font-style: italic;
+			font-size: small;
+		}
+	}
+
+	>.content {
+		padding: 0.5rem;
+	}
+}
+
+.cell.selected {
+	border-color: blue;
+	background-color: skyblue;
+}
+
+.flex-row {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+#commands {
+	min-width: 15rem;
+	border-left: 1px solid steelblue;
+	border-bottom: 1px solid steelblue;
+
+	>input[type='search'] {
+		width: 100%;
+	}
+
+	menu {
+		padding: 0;
+
+		>button {
+			text-align: left;
+			width: 100%;
+		}
+
+		>li {
+			list-style: none;
+			margin: 0.5rem;
+
+			>button {
+				border: 1px solid lightgray;
+				border-radius: 2px;
+			}
+		}
+	}
+}
+
+#messages {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	list-style: none;
+	text-align: right;
+
+	>li {
+		border: 1px solid lightgray;
+		border-radius: 2px;
+		margin: 1rem;
+		margin-left: auto;
+		width: fit-content;
+		padding: 0.5rem;
+	}
+
+	>li.info {
+		background-color: white;
+		color: black;
+	}
+
+	>li.error {
+		background-color: hsl(0, 95%, 95%);
+		color: hsl(0, 95%, 25%);
+	}
+}
